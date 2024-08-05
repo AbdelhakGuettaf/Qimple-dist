@@ -9,16 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const utils_1 = require("./lib/utils");
-const router = (0, express_1.Router)();
-router.get("/updateEmployees", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!req.query.agency) {
-        res.status(400).send("Missing agency");
-        return;
+exports.FetchEmployees = void 0;
+const config_1 = require("./config");
+const FetchEmployees = (agency) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!agency)
+        return null;
+    const res = yield config_1.rhApi.get(`/agencyEmployees?agency=${agency}`);
+    if (res.status !== 200) {
+        throw new Error("Failed to fetch employees");
     }
-    const employees = yield (0, utils_1.FetchEmployees)(req.query.agency);
-    return employees;
-}));
-exports.default = (0, express_1.Router)().use("/api", router);
-//# sourceMappingURL=routes.js.map
+    return res.data;
+});
+exports.FetchEmployees = FetchEmployees;
+//# sourceMappingURL=utils.js.map

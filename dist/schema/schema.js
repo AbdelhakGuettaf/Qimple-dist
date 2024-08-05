@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parcelOrderRelations = exports.orderParcel = exports.userRelations = exports.agencyRelations = exports.orders = exports.agencies = exports.users = void 0;
+exports.parcelOrderRelations = exports.employees = exports.orderParcel = exports.userRelations = exports.agencyRelations = exports.orders = exports.agencies = exports.users = void 0;
 const drizzle_orm_1 = require("drizzle-orm");
 const pg_core_1 = require("drizzle-orm/pg-core");
 exports.users = (0, pg_core_1.pgTable)("users", {
@@ -26,8 +26,8 @@ exports.agencies = (0, pg_core_1.pgTable)("agencies", {
         .defaultNow()
         .$onUpdate(() => new Date()),
 }, (table) => ({
-    nameidx: (0, pg_core_1.index)("name_idx").on(table.name),
-    networkidx: (0, pg_core_1.index)("network_idx").on(table.network),
+    nameIdx: (0, pg_core_1.index)("name_idx").on(table.name),
+    networkIdx: (0, pg_core_1.index)("network_idx").on(table.network),
 }));
 exports.orders = (0, pg_core_1.pgTable)("orders", {
     id: (0, pg_core_1.serial)("id").primaryKey(),
@@ -43,10 +43,10 @@ exports.orders = (0, pg_core_1.pgTable)("orders", {
         .defaultNow()
         .$onUpdate(() => new Date()),
 }, (table) => ({
-    ticketidx: (0, pg_core_1.index)("ticket_idx").on(table.ticket),
-    createdatidx: (0, pg_core_1.index)("created_at_idx").on(table.createdAt),
-    agencyididx: (0, pg_core_1.index)("agency_id_idx").on(table.agencyId),
-    statusidx: (0, pg_core_1.index)("status_idx").on(table.status),
+    ticketIdx: (0, pg_core_1.index)("ticket_idx").on(table.ticket),
+    createdAtIdx: (0, pg_core_1.index)("created_at_idx").on(table.createdAt),
+    agencyIdIdx: (0, pg_core_1.index)("agency_id_idx").on(table.agencyId),
+    orderStatusIdx: (0, pg_core_1.index)("order_status_idx").on(table.status),
 }));
 exports.agencyRelations = (0, drizzle_orm_1.relations)(exports.agencies, ({ many }) => ({
     orders: many(exports.orders),
@@ -59,6 +59,7 @@ exports.orderParcel = (0, pg_core_1.pgTable)("order_parcel", {
     id: (0, pg_core_1.serial)("id").primaryKey(),
     orderId: (0, pg_core_1.integer)("order_id").references(() => exports.orders.id),
     tracking: (0, pg_core_1.text)("tracking").notNull(),
+    status: (0, pg_core_1.text)("status").default("Attente"),
     packages: (0, pg_core_1.text)("packages"),
     comment: (0, pg_core_1.text)("comment"),
     client: (0, pg_core_1.text)("client"),
@@ -72,8 +73,21 @@ exports.orderParcel = (0, pg_core_1.pgTable)("order_parcel", {
         .defaultNow()
         .$onUpdate(() => new Date()),
 }, (table) => ({
-    orderididx: (0, pg_core_1.index)("order_id_idx").on(table.orderId),
-    tracking: (0, pg_core_1.index)("tracking_idx").on(table.tracking),
+    orderIdIdx: (0, pg_core_1.index)("order_id_idx").on(table.orderId),
+    trackingIdx: (0, pg_core_1.index)("tracking_idx").on(table.tracking),
+    statusIdx: (0, pg_core_1.index)("status_idx").on(table.status),
+}));
+exports.employees = (0, pg_core_1.pgTable)("employees", {
+    id: (0, pg_core_1.serial)("id").primaryKey(),
+    rhId: (0, pg_core_1.text)("rh_id").notNull(),
+    name: (0, pg_core_1.text)("name").notNull(),
+    active: (0, pg_core_1.boolean)("active").default(true),
+    agencyId: (0, pg_core_1.integer)("agency_id").references(() => exports.agencies.id),
+}, (table) => ({
+    rhIdx: (0, pg_core_1.index)("rh_id_idx").on(table.rhId),
+    agencyIdIdx: (0, pg_core_1.index)("agency_id_idx").on(table.agencyId),
+    nameIdx: (0, pg_core_1.index)("name_idx").on(table.name),
+    activeIdx: (0, pg_core_1.index)("active").on(table.active),
 }));
 exports.parcelOrderRelations = (0, drizzle_orm_1.relations)(exports.orders, ({ many }) => ({
     parcels: many(exports.orderParcel),

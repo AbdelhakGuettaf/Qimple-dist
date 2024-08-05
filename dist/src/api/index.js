@@ -104,6 +104,26 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
         }
         NotifyUserList(id);
     };
+    app.get("/updateEmployees", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        if (!req.query.agency) {
+            res.status(400).send("Missing agency");
+            return;
+        }
+        try {
+            const { status, data } = yield config_1.rhApi.get(`/agencyEmployees?agency=${req.query.agency}`);
+            if (status !== 200) {
+                res.status(500).send(`RH API Request Error, Statu: ${status}`);
+                return;
+            }
+            res.status(200).json(data.data);
+            return;
+        }
+        catch (e) {
+            console.log(e);
+            res.status(500).send(e);
+            return;
+        }
+    }));
     app.post("/createOrder", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         var _a;
         const { comment, trackings, userId, agencyName } = req.body;
@@ -117,11 +137,6 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
         let ticket = null;
         let orderId = null;
         try {
-            const orderCount = yield db
-                .select({ count: (0, drizzle_orm_1.count)() })
-                .from(schema.orders)
-                .where((0, drizzle_orm_1.sql) `"created_at" >= ${startOfToday} AND "created_at" <= ${endOfToday}`)
-                .execute();
             const agency = yield db
                 .select()
                 .from(schema.agencies)
@@ -131,6 +146,11 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
                 res.status(400).json({ success: false, message: "Agency not found" });
                 return;
             }
+            const orderCount = yield db
+                .select({ count: (0, drizzle_orm_1.count)() })
+                .from(schema.orders)
+                .where((0, drizzle_orm_1.sql) `"created_at" >= ${startOfToday} AND "created_at" <= ${endOfToday} AND "agencyId" = ${agency[0].id}`)
+                .execute();
             const order = yield db
                 .insert(schema.orders)
                 .values({
@@ -235,6 +255,7 @@ const start = () => __awaiter(void 0, void 0, void 0, function* () {
             ws.send(`echo: ${msg}`);
         }));
     });
+    app.get("/updateEmployees", (req, res) => __awaiter(void 0, void 0, void 0, function* () { }));
     app.listen(config_1.port);
     console.info(`Listening on port ${config_1.port}`);
 });
