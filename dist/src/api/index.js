@@ -24,7 +24,12 @@ process.on("uncaughtException", function (err) {
 env.config();
 const connectionString = process.env.DATABASE_URL;
 const orgConnectionString = process.env.ORG_URL;
-const client = postgres(connectionString);
+const client = postgres(connectionString, {
+    debug: true,
+    onnotice(notice) {
+        console.log(notice.message);
+    },
+});
 const orgClient = postgres(orgConnectionString, { debug: true });
 const db = (0, postgres_js_1.drizzle)(client, { schema: schema });
 const orgDb = (0, postgres_js_1.drizzle)(orgClient);
